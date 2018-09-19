@@ -21,6 +21,8 @@ template<typename T1, typename T2> T2 ThreadSafeCache<T1,T2>::get(const T1& keyI
 	if( iter != m_InternalThreadSafeCache.end())
 	{
 		lock.unlock();
+		if(iter->second.isExpired())
+			cout << "Warning : The item is expired" << endl;
 		return(iter->second.get());
 	}
 
@@ -45,7 +47,7 @@ template<typename T1, typename T2> bool ThreadSafeCache<T1,T2>::upsert(const std
 	}
 	else
 	{
-		ExpirableObject<T2> valueItem(upsertItem.second, 0, TimeUnit::MilliSeconds);
+		ExpirableObject<T2> valueItem(upsertItem.second);
 		if(!(iter->first == upsertItem.first && iter->second == valueItem))
 		{
 			updateRequired = true;
@@ -58,7 +60,7 @@ template<typename T1, typename T2> bool ThreadSafeCache<T1,T2>::upsert(const std
 	if(updateRequired)
 	{
 		std::unique_lock<std::shared_mutex> writeLock(m_readWriteMutex);
-		ExpirableObject<T2> valueItem(upsertItem.second, 0, TimeUnit::MilliSeconds);
+		ExpirableObject<T2> valueItem(upsertItem.second);
 		m_InternalThreadSafeCache[upsertItem.first] = valueItem;
 	}	
 
