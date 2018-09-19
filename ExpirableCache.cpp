@@ -11,6 +11,11 @@ template<typename T1, typename T2> ExpirableCache<T1,T2>::ExpirableCache()
 
 }
 
+// Parameterized Constructor implementation.
+template<typename T1, typename T2> ExpirableCache<T1,T2>::ExpirableCache(const long& quantity, const TimeUnit& unit) : m_waitQuantity(quantity), m_timeUnit(unit)
+{
+
+}
 // Get Function to get an item from the ExpirableCache. returns the value of a key if this is present in the cache.
 template<typename T1, typename T2> T2 ExpirableCache<T1,T2>::get(const T1& keyItem)
 {
@@ -20,7 +25,6 @@ template<typename T1, typename T2> T2 ExpirableCache<T1,T2>::get(const T1& keyIt
 	auto iter = m_InternalExpirableCache.find(keyItem);
 	if( iter != m_InternalExpirableCache.end())
 	{
-		lock.unlock();
 		if(!iter->second.isExpired())
 			return(iter->second.get());
 		else
@@ -46,7 +50,7 @@ template<typename T1, typename T2> bool ExpirableCache<T1,T2>::upsert(const std:
 	}
 	else
 	{
-		ExpirableObject<T2> valueItem(upsertItem.second);
+		ExpirableObject<T2> valueItem(upsertItem.second, m_waitQuantity, m_timeUnit);
 		if(!(iter->first == upsertItem.first && iter->second == valueItem))
 		{
 			updateRequired = true;
@@ -59,7 +63,7 @@ template<typename T1, typename T2> bool ExpirableCache<T1,T2>::upsert(const std:
 	if(updateRequired)
 	{
 		std::unique_lock<std::shared_mutex> writeLock(m_readWriteMutex);
-		ExpirableObject<T2> valueItem(upsertItem.second);
+		ExpirableObject<T2> valueItem(upsertItem.second, m_waitQuantity, m_timeUnit);
 		m_InternalExpirableCache[upsertItem.first] = valueItem;
 	}	
 

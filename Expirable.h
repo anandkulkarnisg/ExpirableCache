@@ -21,7 +21,15 @@ class Expirable
 		{ 
 			m_waitCount = TimeUtils::waitDuration(waitQuantity, unit).count();
 		}
-	
+		long getWaitCount() const
+		{
+			return(m_waitCount);
+		}
+		void setWaitCount(const long& waitCount)
+		{
+			m_waitCount = waitCount;
+		}
+
 		bool isExpired()
 		{
 			auto now = std::chrono::high_resolution_clock::now();

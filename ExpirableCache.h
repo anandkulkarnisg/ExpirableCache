@@ -20,9 +20,12 @@ template<typename T1, typename T2> class ExpirableCache : private boost::noncopy
 	private:
 		std::map<T1, ExpirableObject<T2>> m_InternalExpirableCache;
 		mutable std::shared_mutex m_readWriteMutex;
+		long m_waitQuantity = 1;
+		TimeUnit m_timeUnit = TimeUnit::Minutes;
 
 	public:
-		ExpirableCache();													// Default constructor.	
+		ExpirableCache();													// Default constructor.
+		ExpirableCache(const long&, const TimeUnit&);						// Specifies default expiry policy.	
 		void runEviction();													// Method to evict expired cache items.
 		bool upsert(const std::pair<T1, T2>&);							    // This method is used to update the cache , returns a status if update was successfull / fail.
 		T2 get(const T1&);													// get an Item from cache in read only mode.
